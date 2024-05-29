@@ -24,22 +24,20 @@ export const predictImage = async (
     if (response.ok) {
       return result;
     } else {
-      const fetchError = new Error(result.error.message);
-      fetchError.fetchResult = result;
-      throw fetchError;
+      throw new Error(result.error);
     }
   } catch (error) {
-    console.log(error)
-    if (error.fetchResult) {
-      console.error(
-        `HTTP request failed with status code ${error.fetchResult.error.code}`,
-        error.fetchResult,
-      );
-      return error.fetchResult;
+    console.error("Error generating response:", error);
+    if (error instanceof Error) {
+      return {
+        error: {
+          message: error.message,
+        },
+      };
     }
     return {
       error: {
-        message: error.message,
+        message: "An unknown error occurred",
       },
     };
   }
