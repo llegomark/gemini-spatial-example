@@ -11,6 +11,8 @@ export function MardownResponse() {
   const [response] = useAtom(responseAtom);
 
   useEffect(() => {
+    const wrapperRef = markdownWrapperRef.current;
+
     function handleMouseOver(event: MouseEvent) {
       // Check if the target of the event is an 'a' element
       const target = event.target as HTMLElement;
@@ -21,47 +23,38 @@ export function MardownResponse() {
         }
       }
     }
+
     function handleMouseEnter() {
       setActiveHoverBox("active");
     }
+
     function handleMouseLeave() {
       setActiveHoverBox(null);
     }
-    if (markdownWrapperRef.current) {
-      markdownWrapperRef.current.addEventListener("mouseover", handleMouseOver);
-      markdownWrapperRef.current.addEventListener(
-        "mouseenter",
-        handleMouseEnter
-      );
-      markdownWrapperRef.current.addEventListener(
-        "mouseleave",
-        handleMouseLeave
-      );
+
+    if (wrapperRef) {
+      wrapperRef.addEventListener("mouseover", handleMouseOver);
+      wrapperRef.addEventListener("mouseenter", handleMouseEnter);
+      wrapperRef.addEventListener("mouseleave", handleMouseLeave);
     }
+
     return () => {
-      if (markdownWrapperRef.current) {
-        markdownWrapperRef.current.removeEventListener(
-          "mouseover",
-          handleMouseOver
-        );
-        markdownWrapperRef.current.removeEventListener(
-          "mouseenter",
-          handleMouseEnter
-        );
-        markdownWrapperRef.current.removeEventListener(
-          "mouseleave",
-          handleMouseLeave
-        );
+      if (wrapperRef) {
+        wrapperRef.removeEventListener("mouseover", handleMouseOver);
+        wrapperRef.removeEventListener("mouseenter", handleMouseEnter);
+        wrapperRef.removeEventListener("mouseleave", handleMouseLeave);
       }
     };
   }, [markdownWrapperRef, setActiveHoverBox]);
 
   return (
     <div ref={markdownWrapperRef}>
-      <Markdown className="w-full pb-4 mx-auto prose text-black" remarkPlugins={breaks}>
+      <Markdown
+        className="w-full pb-4 mx-auto prose text-black"
+        remarkPlugins={[breaks]}
+      >
         {replaceLinkFormat(response)}
       </Markdown>
     </div>
   );
 }
-
