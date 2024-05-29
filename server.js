@@ -35,7 +35,7 @@ app.post("/api/generateResponseToText", async (req, res) => {
   const { prompt } = req.body;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
     const result = await model.generateContent(prompt);
     const response = result.response;
