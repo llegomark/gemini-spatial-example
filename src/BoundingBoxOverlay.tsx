@@ -41,66 +41,76 @@ export function BoundingBoxOverlay() {
   });
 
   useEffect(() => {
-    // Not the most efficient way to do this but it works
+    let timeoutId: number | null = null;
+
     const handleMouseMove = (e: MouseEvent) => {
-      const x = e.clientX;
-      const y = e.clientY;
-      const wrapperPosition = bbWrapperRef.current?.getBoundingClientRect();
-      if (
-        bbWrapperRef.current &&
-        wrapperPosition &&
-        x > wrapperPosition.left &&
-        x < wrapperPosition.right &&
-        y > wrapperPosition.top &&
-        y < wrapperPosition.bottom
-      ) {
-        const rawBoxes = document.querySelectorAll(".bb");
-        const positions = [...rawBoxes].map((box: Element) => {
-          const rect = (box as HTMLElement).getBoundingClientRect();
-          return {
-            left: rect.left,
-            right: rect.right,
-            top: rect.top,
-            bottom: rect.bottom,
-            string: box.getAttribute("data-string"),
-          };
-        });
-        const matches = positions.filter(
-          (pos: { left: number; right: number; top: number; bottom: number }) =>
-            x > pos.left && x < pos.right && y > pos.top && y < pos.bottom,
-        );
-        // sort by distance to center
-        // @ts-ignore
-        matches.sort((a, b) => {
-          const aCenter = {
-            x: (a.left + a.right) / 2,
-            y: (a.top + a.bottom) / 2,
-          };
-          const bCenter = {
-            x: (b.left + b.right) / 2,
-            y: (b.top + b.bottom) / 2,
-          };
-          const aDistance = Math.sqrt(
-            (aCenter.x - x) ** 2 + (aCenter.y - y) ** 2,
-          );
-          const bDistance = Math.sqrt(
-            (bCenter.x - x) ** 2 + (bCenter.y - y) ** 2,
-          );
-          return aDistance - bDistance;
-        });
-        if (matches.length > 0) {
-          const match = matches[0];
-          setActiverHoverBox(match.string);
-        } else {
-          setActiverHoverBox(null);
-        }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
+
+      timeoutId = window.setTimeout(() => {
+        const x = e.clientX;
+        const y = e.clientY;
+        const wrapperPosition = bbWrapperRef.current?.getBoundingClientRect();
+        if (
+          bbWrapperRef.current &&
+          wrapperPosition &&
+          x > wrapperPosition.left &&
+          x < wrapperPosition.right &&
+          y > wrapperPosition.top &&
+          y < wrapperPosition.bottom
+        ) {
+          const rawBoxes = document.querySelectorAll(".bb");
+          const positions = [...rawBoxes].map((box: Element) => {
+            const rect = (box as HTMLElement).getBoundingClientRect();
+            return {
+              left: rect.left,
+              right: rect.right,
+              top: rect.top,
+              bottom: rect.bottom,
+              string: box.getAttribute("data-string"),
+            };
+          });
+          const matches = positions.filter(
+            (pos: { left: number; right: number; top: number; bottom: number }) =>
+              x > pos.left && x < pos.right && y > pos.top && y < pos.bottom,
+          );
+          matches.sort((a, b) => {
+            const aCenter = {
+              x: (a.left + a.right) / 2,
+              y: (a.top + a.bottom) / 2,
+            };
+            const bCenter = {
+              x: (b.left + b.right) / 2,
+              y: (b.top + b.bottom) / 2,
+            };
+            const aDistance = Math.sqrt(
+              (aCenter.x - x) ** 2 + (aCenter.y - y) ** 2,
+            );
+            const bDistance = Math.sqrt(
+              (bCenter.x - x) ** 2 + (bCenter.y - y) ** 2,
+            );
+            return aDistance - bDistance;
+          });
+          if (matches.length > 0) {
+            const match = matches[0];
+            setActiverHoverBox(match.string);
+          } else {
+            setActiverHoverBox(null);
+          }
+        }
+      }, 100);
     };
+
     window.addEventListener("mousemove", handleMouseMove);
+
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, [formatted]);
+  }, [formatted, setActiverHoverBox]);
 
   return (
     <div
