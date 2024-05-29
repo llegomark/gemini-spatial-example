@@ -35,15 +35,17 @@ app.post("/api/generateResponseToText", async (req, res) => {
   const { prompt } = req.body;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash-latest",
+      safetySettings: safetySettings,
+    });
 
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
     res.json({ text });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    handleSafetyError(error, res);
   }
 });
 
